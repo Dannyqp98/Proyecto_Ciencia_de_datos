@@ -1,5 +1,8 @@
 import gpxpy
 import pandas as pd
+from geopy.geocoders import Nominatim
+
+geolocator = Nominatim(user_agent="geoapiExercises")
 
 def read_gpx(file: str) -> pd.DataFrame:
   df = None
@@ -20,11 +23,46 @@ def read_gpx(file: str) -> pd.DataFrame:
 
   return df
 
+def city_state_country(row):
+    coord = f"{row['latitude']}, {row['longitude']}"
+    location = geolocator.reverse(coord, exactly_one=True)
+    address = location.raw['address']
+    barrio=address.get('neighbourhood','')
+    #suburb=address.get('suburb','')
+    city = address.get('city', '')
+    state = address.get('state', '')
+    country = address.get('country', '')
+    row['barrio'] = barrio
+    #row['sub_urb'] = suburb
+    row['city'] = city
+    row['state'] = state
+    row['country'] = country
+    return row
+
+
 df1 = read_gpx('recovery.01-Mar-2022-1533.gpx')
 df2 = read_gpx('recovery.05-Mar-2022.1025.gpx')
 df3 = read_gpx('recovery.25-May-2022-0907.gpx')
 
-dft=pd.concat([df1,df2,df3],axis=0)
+dft=pd.concat([df1,df2,df3],axis=0).reset_index()
 dft['time']=dft.time.astype(str)
+dft['time']=pd.to_datetime(dft['time'])
 
-dft.to_csv('Coordenadas.csv',sep=';',index=False)
+dft['Round_lat']=dft.latitude.round(3)
+dft['Round_long']=dft.longitude.round(3)
+df_group=dft.drop_duplicates(subset=['Round_lat','Round_long'])
+
+df_locs = df_group.apply(city_state_country, axis=1)
+
+cols_merge=[col  for col in df_locs.columns if col not in dft.columns]
+keys=['Round_lat','Round_long']
+for key in keys:
+  cols_merge.append(key)
+
+df_locations_merge=df_locs[cols_merge]
+
+df_export=dft.merge(df_locations_merge,how='left',on=['Round_lat','Round_long']).reset_index()
+
+df_export[cols_merge]=df_export[cols_merge].replace('','Sin data')
+
+df_export.to_csv('Coordenadas.csv',sep=';',index=False)
