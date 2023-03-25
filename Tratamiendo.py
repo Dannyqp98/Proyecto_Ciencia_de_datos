@@ -53,6 +53,11 @@ dft['Round_long']=dft.longitude.round(3)
 df_group=dft.drop_duplicates(subset=['Round_lat','Round_long'])
 
 df_locs = df_group.apply(city_state_country, axis=1)
+df_locs.reset_index()
+cols_locs=['time', 'latitude', 'longitude', 'elevation', 'Round_lat',
+       'Round_long', 'barrio', 'city', 'state', 'country']
+
+df_locs=df_locs[cols_locs]
 
 cols_merge=[col  for col in df_locs.columns if col not in dft.columns]
 keys=['Round_lat','Round_long']
@@ -65,6 +70,13 @@ df_export=dft.merge(df_locations_merge,how='left',on=['Round_lat','Round_long'])
 
 df_export[cols_merge]=df_export[cols_merge].replace('','Sin data')
 
+replace_chars=[('á','a'),('é','e'),('í','i'),('ó','o'),('ú','u')]
+
+for col in cols_merge:
+  df_export[col]=df_export[col].astype(str).str.strip()
+  for char in replace_chars:
+    df_export[col]=df_export[col].str.replace(char[0],char[1])
 
 
+df_export
 df_export.to_csv('Coordenadas.csv',sep=';',index=False)
