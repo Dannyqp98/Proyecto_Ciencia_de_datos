@@ -65,4 +65,6 @@ df_export=dft.merge(df_locations_merge,how='left',on=['Round_lat','Round_long'])
 
 df_export[cols_merge]=df_export[cols_merge].replace('','Sin data')
 
+
+
 df_export.to_csv('Coordenadas.csv',sep=';',index=False)
