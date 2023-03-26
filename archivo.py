@@ -36,23 +36,34 @@ df3 = df3.round({'latitude': 6, 'longitude': 6, 'elevation': 2})
 dft = pd.concat([df1, df2, df3], axis=0)
 dft = dft.reset_index(drop=True)
 
-# dft['year'] = pd.DatetimeIndex(dft['time']).year
-# dft['month'] = pd.DatetimeIndex(dft['time']).month
-# dft['day'] = pd.DatetimeIndex(dft['time']).day
-# dft['hour'] = pd.DatetimeIndex(dft['time']).time
+dft['year'] = pd.DatetimeIndex(dft['time']).year
+dft['month'] = pd.DatetimeIndex(dft['time']).month
+dft['day'] = pd.DatetimeIndex(dft['time']).day
+dft['hour'] = pd.DatetimeIndex(dft['time']).time
+
+# Base de datos 
 
 conn = sqlite3.connect('base_general.db')
+conn.execute('''CREATE TABLE datos_crudos (
+              time TEXTO, 
+              latitude FLOAT, 
+              longitude FLOAT, 
+              elevation FLOAT, 
+              year INT, 
+              month INT, 
+              day INT, 
+              hour TEXTO)''')
 
-# Crear tabla
-conn.execute('''CREATE TABLE IF NOT EXISTS datos_gps
-                (time TEXT, latitude REAL, longitude REAL, elevation REAL)''')
-
-# Insertar los datos en la tabla, separando los datos por columna
 for index, row in dft.iterrows():
-    query = "INSERT INTO datos_gps (time, latitude, longitude, elevation) VALUES (?, ?, ?, ?)"
-    conn.execute(query, (row['time'].strftime('%Y-%m-%d %H:%M:%S'), row['latitude'], row['longitude'], row['elevation']))
+    query = "INSERT INTO datos_crudos (time, latitude, longitude, elevation, year, month, day, hour ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+    conn.execute(query, (row['time'].strftime('%Y-%m-%d %H:%M:%S'),
+                        row['latitude'], 
+                        row['longitude'], 
+                        row['elevation'], 
+                        row['year'], 
+                        row['month'],
+                        row['day'], 
+                        row['hour'].strftime('%H:%M:%S')))
 
-
-# Guardar los cambios y cerrar la conexión
 conn.commit()
 conn.close()
