@@ -93,9 +93,8 @@ conn.execute('''CREATE TABLE datos_crudos (
               elevation FLOAT)''')
 
 for index, row in dftc.iterrows():
-    query = "INSERT INTO datos_crudos (level_0, time, latitude, longitude, elevation, Round_lat, Round_long, barrio, city, state, country ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+    query = "INSERT INTO datos_crudos (time, latitude, longitude, elevation ) VALUES (?, ?, ?, ?)"
     conn.execute(query, (
-                        row['level_0'], 
                         row['time'].strftime('%Y-%m-%d %H:%M:%S'),
                         row['latitude'], 
                         row['longitude'], 
