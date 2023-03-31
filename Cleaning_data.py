@@ -1,6 +1,7 @@
 import gpxpy
 import pandas as pd
 
+"""Lectura de datos"""
 def read_gpx(file: str) -> pd.DataFrame:
   df = None
   points = []
@@ -27,9 +28,11 @@ print(df1)
 print(df2)
 print(df3)
 
+"""Formatos"""
 df1['time']=df1['time'].values.astype('datetime64[s]')
 df2['time']=df2['time'].values.astype('datetime64[s]')
 df3['time']=df3['time'].values.astype('datetime64[s]')
+
 
 df1 = df1.round({'latitude': 6, 'longitude': 6, 'elevation': 2})
 df2 = df2.round({'latitude': 6, 'longitude': 6, 'elevation': 2})
@@ -42,6 +45,7 @@ dft = pd.concat([df1, df2, df3], axis=0)
 dft = dft.reset_index(drop=True)
 print(dft)
 
+"""Campos para realizar análisis"""
 dft['year'] = pd.DatetimeIndex(dft['time']).year
 dft['month'] = pd.DatetimeIndex(dft['time']).month
 dft['day'] = pd.DatetimeIndex(dft['time']).day
